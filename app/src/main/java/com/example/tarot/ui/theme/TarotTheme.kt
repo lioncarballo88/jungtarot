@@ -4,6 +4,7 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
 import androidx.compose.ui.graphics.Color
 
 object TarotPalette {
@@ -25,10 +26,21 @@ private val darkScheme: ColorScheme = darkColorScheme(
     tertiary = TarotPalette.accent
 )
 
+private val lightScheme: ColorScheme = lightColorScheme(
+    primary = TarotPalette.accent,
+    onPrimary = Color.Black,
+    background = Color(0xFFFFFBFE),
+    surface = Color(0xFFFFFFFF),
+    onSurface = Color(0xFF1C1B1F),
+    secondary = Color.Black,
+    onSecondary = Color.White,
+    tertiary = TarotPalette.accent
+)
+
 @Composable
 fun TarotTheme(content: @Composable () -> Unit) {
     val useDark = isSystemInDarkTheme()
-    val palette = if (useDark) darkScheme else darkScheme
+    val palette = if (useDark) darkScheme else lightScheme
     MaterialTheme(
         colorScheme = palette,
         typography = TarotTypography,
