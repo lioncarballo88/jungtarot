@@ -11,6 +11,8 @@ jobs:
   build:
     name: Build Android App
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     
     steps:
     - name: Checkout code
@@ -53,6 +55,8 @@ jobs:
   lint:
     name: Lint Check
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     
     steps:
     - name: Checkout code
@@ -84,6 +88,8 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: [build, lint]
+    permissions:
+      contents: write  # Needed for creating releases
     
     steps:
     - name: Checkout code
