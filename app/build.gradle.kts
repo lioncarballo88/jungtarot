@@ -1,14 +1,16 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
 }
 
 android {
-    namespace = "com.example.tarot"
+    namespace = "com.jungtarot.app"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.example.tarot"
+        applicationId = "com.jungtarot.app"
         minSdk = 24
         targetSdk = 34
         versionCode = 1
@@ -18,6 +20,11 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+
+        val localProps = Properties()
+        val localPropsFile = rootProject.file("local.properties")
+        if (localPropsFile.exists()) localProps.load(localPropsFile.inputStream())
+        buildConfigField("String", "GEMINI_API_KEY", "\"${localProps["gemini.api.key"]}\"")
     }
 
     // Optional: Configure signing for release builds
@@ -74,6 +81,7 @@ android {
     
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     
     composeOptions {
@@ -103,6 +111,12 @@ dependencies {
     // Lifecycle and ViewModel
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.2")
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.6.2")
+
+    // Gemini
+    implementation("com.google.ai.client.generativeai:generativeai:0.9.0")
+
+    // Navigation
+    implementation("androidx.navigation:navigation-compose:2.7.6")
     
     // Testing dependencies
     testImplementation("junit:junit:4.13.2")
