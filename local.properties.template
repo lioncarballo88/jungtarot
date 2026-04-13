@@ -1,0 +1,16 @@
+# Secrets configuration for the Jung Tarot App
+# Copy this file to 'local.properties' and fill in your actual API keys
+# IMPORTANT: DO NOT commit local.properties to version control!
+# 
+# local.properties is managed by gitignore and contains sensitive data:
+# - API keys
+# - Passwords
+# - Tokens
+
+# Gemini API Key
+# Get your key from: https://ai.google.dev/
+# This key will be automatically exposed to BuildConfig.GEMINI_API_KEY
+gemini.api.key=YOUR_GEMINI_API_KEY_HERE
+
+# Optional: Android SDK path (usually auto-detected)
+# sdk.dir=/path/to/Android/Sdk

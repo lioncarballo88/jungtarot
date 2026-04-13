@@ -14,7 +14,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 sealed class HomeEvent {
-    data class ReadingReady(val reading: TarotReading) : HomeEvent()
+    object ReadingReady : HomeEvent()
     data class Error(val message: String) : HomeEvent()
 }
 
@@ -28,16 +28,17 @@ data class HomeUiState(
 }
 
 class HomeViewModel(
-    private val repository: TarotRepository = TarotRepository(),
-    private val readingEngine: ReadingEngine = ReadingEngine(TarotRepository(), GeminiService())
+    private val repository: TarotRepository = TarotRepository()
 ) : ViewModel() {
+    private val readingEngine = ReadingEngine(repository, GeminiService(repository))
+
     private val _state = MutableStateFlow(HomeUiState())
     val state: StateFlow<HomeUiState> = _state
 
-    val catalog: List<TarotCard> by lazy { repository.getAllCards() }
+    private val _currentReading = MutableStateFlow<TarotReading?>(null)
+    val currentReading: StateFlow<TarotReading?> = _currentReading
 
-    var lastReading: TarotReading? = null
-        private set
+    val catalog: List<TarotCard> by lazy { repository.getAllCards() }
 
     fun onSpreadSelected(spread: SpreadType) {
         _state.value = _state.value.copy(
@@ -86,8 +87,8 @@ class HomeViewModel(
                 snapshot.copy(isLoading = false, event = HomeEvent.Error(error.message ?: "Se produjo un error"))
             } else {
                 result.getOrThrow().let { reading ->
-                    lastReading = reading
-                    snapshot.copy(isLoading = false, event = HomeEvent.ReadingReady(reading))
+                    _currentReading.value = reading
+                    snapshot.copy(isLoading = false, event = HomeEvent.ReadingReady)
                 }
             }
         }

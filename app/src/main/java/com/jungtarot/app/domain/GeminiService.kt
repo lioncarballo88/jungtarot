@@ -1,5 +1,6 @@
 package com.jungtarot.app.domain
 
+import android.util.Log
 import com.google.ai.client.generativeai.GenerativeModel
 import com.google.ai.client.generativeai.type.content
 import com.google.ai.client.generativeai.type.generationConfig
@@ -7,6 +8,9 @@ import com.jungtarot.app.BuildConfig
 import com.jungtarot.app.data.CardMetadata
 import com.jungtarot.app.data.SpreadType
 import com.jungtarot.app.data.TarotRepository
+import kotlinx.coroutines.delay
+import java.io.IOException
+import java.net.SocketTimeoutException
 
 class GeminiService(private val repository: TarotRepository = TarotRepository()) {
 
@@ -25,13 +29,79 @@ class GeminiService(private val repository: TarotRepository = TarotRepository())
     suspend fun generateReading(spreadType: SpreadType, cards: List<CardMetadata>): String {
         val spanishNames = repository.spanishNames
         val prompt = buildPrompt(spreadType, cards, spanishNames)
+        
         return try {
-            model.generateContent(prompt).text
-                ?: "El oráculo guarda silencio. Intenta de nuevo."
+            retryWithExponentialBackoff(maxRetries = 3) {
+                model.generateContent(prompt).text
+                    ?: "El oráculo guarda silencio. Intenta de nuevo."
+            }
         } catch (e: Exception) {
-            android.util.Log.e("GeminiService", "Error completo", e)
-            "${e::class.java.name}: ${e.message}\n\nCausa: ${e.cause?.message}"
+            Log.e(TAG, "Error después de todos los reintentos", e)
+            // All error messages remain in Spanish for user-facing experience
+            when (e) {
+                is IOException -> "Conexión perdida con el oráculo. Por favor, verifica tu conexión de internet."
+                is SocketTimeoutException -> "El oráculo tardó demasiado en responder. Por favor, intenta de nuevo."
+                is java.util.concurrent.TimeoutException -> "Se agotó el tiempo esperando al oráculo. Por favor, intenta de nuevo."
+                is IllegalArgumentException -> "Solicitud inválida al oráculo. Por favor, intenta de nuevo."
+                else -> "${e::class.java.simpleName}: ${e.message ?: "Error desconocido del oráculo"}"
+            }
         }
+    }
+
+    /**
+     * Retry mechanism with exponential backoff for API calls.
+     * Retries up to 3 times with increasing delays: 2s, 4s, 8s
+     */
+    private suspend inline fun <T> retryWithExponentialBackoff(
+        maxRetries: Int = 3,
+        initialDelayMs: Long = 2000,
+        crossinline block: suspend () -> T
+    ): T {
+        var lastException: Exception? = null
+        
+        repeat(maxRetries) { attemptNumber ->
+            try {
+                Log.d(TAG, "Intento ${attemptNumber + 1}/$maxRetries de conexión con Gemini API")
+                val result = block()
+                Log.d(TAG, "Solicitud a Gemini API exitosa en intento ${attemptNumber + 1}")
+                return result
+            } catch (e: Exception) {
+                lastException = e
+                val isRetryable = e.isRetryable()
+                
+                Log.w(
+                    TAG,
+                    "Intento ${attemptNumber + 1}/$maxRetries falló" +
+                            if (isRetryable) " (reintentable): ${e.message}" else " (no reintentable): ${e.message}",
+                    e
+                )
+                
+                // Only retry on specific retryable errors
+                if (!isRetryable || attemptNumber == maxRetries - 1) {
+                    throw e
+                }
+                
+                // Calculate exponential backoff delay: 2s, 4s, 8s (2^attemptNumber)
+                val delayMs = initialDelayMs * (1L shl attemptNumber)
+                Log.d(TAG, "Esperando ${delayMs}ms antes del siguiente reintento...")
+                delay(delayMs)
+            }
+        }
+        
+        // Should never reach here due to throw in catch, but for safety
+        throw lastException ?: Exception("Error desconocido después de $maxRetries reintentos")
+    }
+
+    /**
+     * Determines if an exception is retryable.
+     * Network and timeout errors are retryable; invalid arguments and other client errors are not.
+     */
+    private fun Exception.isRetryable(): Boolean = when (this) {
+        is IOException -> true                           // Network errors
+        is SocketTimeoutException -> true                // Socket timeout
+        is java.util.concurrent.TimeoutException -> true  // General timeout
+        is IllegalArgumentException -> false              // Invalid request - don't retry
+        else -> false                                     // Unknown errors - don't retry
     }
 
     private fun buildPrompt(
@@ -74,6 +144,7 @@ Termina con una pregunta de introspección.
     }
 
     companion object {
+        private const val TAG = "GeminiService"
         private val SYSTEM_PROMPT = """
 Eres un maestro de Tarot Evolutivo que fusiona la sabiduría de Alejandro Jodorowsky (La Vía del Tarot) con la psicología analítica de Carl Jung. Tu objetivo no es predecir el futuro, sino ayudar al consultante a comprender su presente como un espejo de su psique.
 

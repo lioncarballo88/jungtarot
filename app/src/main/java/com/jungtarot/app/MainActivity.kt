@@ -29,6 +29,7 @@ class MainActivity : ComponentActivity() {
                 val navController = rememberNavController()
                 val viewModel: HomeViewModel = viewModel()
                 val state by viewModel.state.collectAsState()
+                val currentReading = viewModel.currentReading.collectAsState()
                 val snackbarHostState = remember { SnackbarHostState() }
 
                 LaunchedEffect(state.event) {
@@ -54,8 +55,7 @@ class MainActivity : ComponentActivity() {
                         )
                     }
                     composable(ROUTE_RESULT) {
-                        val reading = (state.event as? HomeEvent.ReadingReady)?.reading
-                            ?: viewModel.lastReading
+                        val reading = currentReading.value
                         if (reading != null) {
                             ResultScreen(
                                 reading = reading,

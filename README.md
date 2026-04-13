@@ -78,14 +78,37 @@ git clone https://github.com/lioncarballo88/jungtarot.git
 cd jungtarot
 ```
 
-### 2. Open in Android Studio
+### 2. Configure API Secrets
+
+This project uses the [Secrets Gradle Plugin](https://developers.google.com/maps/documentation/android-sdk/secrets-gradle-plugin) for secure secret management.
+
+#### Setup Steps:
+
+1. **Copy template file**
+   ```bash
+   cp local.properties.template local.properties
+   ```
+
+2. **Get your Gemini API Key**
+   - Visit [Google AI Studio](https://ai.google.dev/)
+   - Create a new API key for Android
+
+3. **Add the key to local.properties**
+   ```properties
+   # local.properties
+   gemini.api.key=YOUR_ACTUAL_API_KEY_HERE
+   ```
+
+**Important**: `local.properties` is in `.gitignore` and should **never** be committed to version control.
+
+### 3. Open in Android Studio
 
 1. Launch Android Studio
 2. Select "Open an Existing Project"
 3. Navigate to the cloned repository
 4. Wait for Gradle sync to complete
 
-### 3. Build the Project
+### 4. Build the Project
 
 #### Using Android Studio:
 1. Click "Build" > "Make Project" (or press Ctrl+F9 / Cmd+F9)
@@ -100,7 +123,7 @@ cd jungtarot
 gradlew.bat build
 ```
 
-### 4. Run the App
+### 5. Run the App
 
 #### Using Android Studio:
 1. Connect an Android device or start an emulator

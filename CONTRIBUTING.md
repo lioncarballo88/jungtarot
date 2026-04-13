@@ -45,17 +45,31 @@ This project adheres to a code of conduct that all contributors are expected to 
    git remote add upstream https://github.com/lioncarballo88/jungtarot.git
    ```
 
-3. **Open in Android Studio**
+3. **Configure Secrets (Gemini API Key)**
+   
+   The project uses the [Secrets Gradle Plugin](https://developers.google.com/maps/documentation/android-sdk/secrets-gradle-plugin) for secure secret management.
+   
+   ```bash
+   # Copy the template file
+   cp local.properties.template local.properties
+   
+   # Edit local.properties and add your Gemini API key
+   # Get your key from: https://ai.google.dev/
+   ```
+   
+   **Important**: Never commit `local.properties` to version control. It's already in `.gitignore`.
+
+4. **Open in Android Studio**
    - File > Open
    - Select the project directory
    - Wait for Gradle sync
 
-4. **Build the project**
+5. **Build the project**
    ```bash
    ./gradlew build
    ```
 
-5. **Run the app**
+6. **Run the app**
    - Connect a device or start an emulator
    - Click Run in Android Studio
 
