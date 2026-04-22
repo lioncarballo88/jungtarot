@@ -14,14 +14,10 @@ class ReadingEngine(
         if (metadata.size != request.cardIds.size) {
             return Result.failure(ReadingError.UnknownCard())
         }
-        return try {
-            val response = geminiService.generateReading(
-                spreadType = request.spreadType,
-                cards = metadata
-            )
-            Result.success(TarotReading(response = response, cardDetails = metadata))
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
+        val response = geminiService.generateReading(
+            spreadType = request.spreadType,
+            cards = metadata
+        )
+        return Result.success(TarotReading(response = response, cardDetails = metadata))
     }
 }

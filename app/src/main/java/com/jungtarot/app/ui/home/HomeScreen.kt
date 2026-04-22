@@ -18,7 +18,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -42,7 +41,6 @@ import com.jungtarot.app.data.SpreadType
 import com.jungtarot.app.data.TarotCard
 import com.jungtarot.app.ui.components.PrimaryButton
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     state: HomeUiState,
@@ -101,7 +99,6 @@ fun HomeScreen(
             CardSlots(
                 selected = state.selectedCards,
                 total = state.spreadType.cardCount,
-                onOpenPicker = { deckDialog.value = true },
                 onCardRemoved = onCardRemoved
             )
 
@@ -167,7 +164,6 @@ private fun SpreadSelector(selected: SpreadType, onSelect: (SpreadType) -> Unit)
 private fun CardSlots(
     selected: List<TarotCard>,
     total: Int,
-    onOpenPicker: () -> Unit,
     onCardRemoved: (String) -> Unit
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
